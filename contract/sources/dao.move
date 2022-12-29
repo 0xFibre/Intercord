@@ -1,22 +1,26 @@
 module fibre::dao {
-    use sui::object::{Self, UID, ID};
     use std::string::{Self, String};
-    use sui::tx_context::{Self, TxContext};
     use std::option::{Self, Option};
+    use std::vector;
+
+    use sui::object::{Self, UID, ID};
+    use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::balance::{Self, Balance};
     use sui::sui::SUI;
     use sui::event::emit;
+    // use sui::table::{Self, Table};
 
     use fibre::error;
-
+    
     struct Dao has key {
         id: UID,
         name: String,
         description: String,
         admin: address,
         config: Option<Config>,
-        balance: Balance<SUI>
+        balance: Balance<SUI>,
+        proposal_ids: vector<ID>
     }
 
     struct DaoCreated has copy, drop {
@@ -46,7 +50,8 @@ module fibre::dao {
             admin,
             description,
             config: option::none(),
-            balance: balance::zero()
+            balance: balance::zero(),
+            proposal_ids: vector::empty<ID>()
         }
     }
 
@@ -56,6 +61,10 @@ module fibre::dao {
 
     public fun balance_mut(self: &mut Dao): &mut Balance<SUI> {
         &mut self.balance
+    }
+
+    public fun get_proposal_ids(self: &mut Dao): vector<ID> {
+        self.proposal_ids
     }
 
     public fun assert_dao_admin(self: &Dao, ctx: &mut TxContext) {
