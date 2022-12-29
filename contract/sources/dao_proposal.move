@@ -9,6 +9,17 @@ module fibre::dao_proposal {
 
     use fibre::dao::{Self, Dao};
 
+    struct CoinTransferProposal<phantom T> has store {
+        id: UID,
+        amount: u64,
+        recipient: address,
+        coin_id: ID,
+    }
+
+    struct VotingProposal has store {
+        id: UID,
+    }
+
     struct Proposal has key, store {
         id: UID,
         type: TypeName,
@@ -18,13 +29,12 @@ module fibre::dao_proposal {
         pointer: u64
     }
 
-    entry fun new<T: store, S: store>(dao: &mut Dao,text: vector<u8>, ctx: &mut TxContext) {
+    public entry fun new<T: store, S: store>(dao: &mut Dao,text: vector<u8>, ctx: &mut TxContext) {
         let proposal = create_proposal<T, S>(text, dao::get_proposals_count(dao), ctx);
         let proposal_ids = dao::get_proposal_ids(dao);
 
         vector::push_back(&mut proposal_ids, object::id(&proposal));
         dao::increment_proposals_count(dao);
-
         transfer::share_object(proposal);
     }
 
