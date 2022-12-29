@@ -23,7 +23,7 @@ module fibre::dao {
         id: UID
     }
 
-    public fun new(name: vector<u8>, description:vector<u8>, ctx: &mut TxContext) {
+    public entry fun new(name: vector<u8>, description:vector<u8>, ctx: &mut TxContext) {
         let dao = create_dao(string::utf8(name), string::utf8(description), ctx);
 
         transfer::transfer(DaoManagerCap { 
