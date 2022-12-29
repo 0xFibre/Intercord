@@ -9,7 +9,6 @@ module fibre::dao {
     use sui::balance::{Self, Balance};
     use sui::sui::SUI;
     use sui::event::emit;
-    // use sui::table::{Self, Table};
 
     use fibre::error;
     
