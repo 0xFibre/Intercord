@@ -9,14 +9,14 @@ module fibre::dao_proposal {
 
     use fibre::dao::{Self, Dao};
 
-    struct CoinTransferProposal<phantom T> has store {
+    struct CoinTransferProposal<phantom T> has key {
         id: UID,
         amount: u64,
         recipient: address,
         coin_id: ID,
     }
 
-    struct VotingProposal has store {
+    struct VotingProposal has key {
         id: UID,
     }
 
@@ -48,4 +48,6 @@ module fibre::dao_proposal {
             pointer,
         }
     }
+
+    
 }
