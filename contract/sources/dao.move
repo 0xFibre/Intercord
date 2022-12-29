@@ -47,7 +47,7 @@ module fibre::dao {
         &mut self.balance
     }
 
-    public fun assert_dao_admin(dao: &Dao, ctx: &mut TxContext) {
-        assert!(dao.admin == tx_context::sender(ctx), error::not_dao_admin())
+    public fun assert_dao_admin(self: &Dao, ctx: &mut TxContext) {
+        assert!(self.admin == tx_context::sender(ctx), error::not_dao_admin())
     }
 }
