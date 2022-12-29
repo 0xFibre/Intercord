@@ -22,7 +22,7 @@ module fibre::dao_treasury {
         amount: u64,
     }
 
-    public entry fun deposit(dao: &mut Dao, payment: &mut Coin<SUI>, amount: u64, ctx: &mut TxContext) {
+    public fun deposit(dao: &mut Dao, payment: &mut Coin<SUI>, amount: u64, ctx: &mut TxContext) {
         let coin_balance = coin::balance_mut(payment);
         let paid = balance::split(coin_balance, amount);
 
@@ -35,7 +35,7 @@ module fibre::dao_treasury {
         balance::join(dao::get_balance_mut(dao), paid);
     }
 
-    public entry fun withdraw(dao: &mut Dao, reciever: address, amount: u64, ctx: &mut TxContext) {
+    public fun withdraw(dao: &mut Dao, reciever: address, amount: u64, ctx: &mut TxContext) {
         dao::assert_dao_admin(dao, ctx);
         
         let withdrawal = coin::take(dao::get_balance_mut(dao), amount, ctx);
