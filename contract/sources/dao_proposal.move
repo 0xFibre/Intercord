@@ -19,7 +19,7 @@ module fibre::dao_proposal {
     }
 
     entry fun new<T: store, S: store>(dao: &mut Dao,text: vector<u8>, ctx: &mut TxContext) {
-        let proposal = create_proposal<T, S>(text, dao::get_proposal_count(dao), ctx);
+        let proposal = create_proposal<T, S>(text, dao::get_proposals_count(dao), ctx);
         let proposal_ids = dao::get_proposal_ids(dao);
 
         vector::push_back(&mut proposal_ids, object::id(&proposal));
