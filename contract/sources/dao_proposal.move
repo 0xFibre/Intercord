@@ -22,6 +22,8 @@ module fibre::dao_proposal {
         let proposal_ids = dao::get_proposal_ids(dao);
 
         vector::push_back(&mut proposal_ids, object::id(&proposal));
+        dao::increment_proposals_count(dao);
+
         transfer::share_object(proposal);
     }
 

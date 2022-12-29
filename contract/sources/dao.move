@@ -19,6 +19,7 @@ module fibre::dao {
         admin: address,
         config: Option<Config>,
         balance: Balance<SUI>,
+        proposals_count: u64,
         proposal_ids: vector<ID>
     }
 
@@ -50,6 +51,7 @@ module fibre::dao {
             description,
             config: option::none(),
             balance: balance::zero(),
+            proposals_count: 0,
             proposal_ids: vector::empty<ID>()
         }
     }
@@ -64,6 +66,10 @@ module fibre::dao {
 
     public fun get_proposal_ids(self: &mut Dao): vector<ID> {
         self.proposal_ids
+    }
+
+    public fun increment_proposals_count(self: &mut Dao) {
+       self.proposals_count = self.proposals_count + 1;
     }
 
     public fun assert_dao_admin(self: &Dao, ctx: &mut TxContext) {
