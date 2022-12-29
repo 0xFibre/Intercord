@@ -17,7 +17,7 @@ module fibre::dao_treasury {
 
     struct Withdrawal has copy, drop {
         coin_id: ID,
-        caller: address,
+        sender: address,
         reciever: address,
         amount: u64,
     }
@@ -35,16 +35,15 @@ module fibre::dao_treasury {
         balance::join(dao::balance_mut(dao), paid);
     }
 
-    public entry fun withdraw( dao: &mut Dao, amount: u64, ctx: &mut TxContext) {
+    public entry fun withdraw(dao: &mut Dao, reciever: address, amount: u64, ctx: &mut TxContext) {
         dao::assert_dao_admin(dao, ctx);
         
         let withdrawal = coin::take(dao::balance_mut(dao), amount, ctx);
-        let caller = tx_context::sender(ctx);
-        let reciever = tx_context::sender(ctx);
+        let sender = tx_context::sender(ctx);
 
         emit(Withdrawal { 
             coin_id: object::id(&withdrawal),
-            caller,
+            sender,
             reciever,
             amount
         });
