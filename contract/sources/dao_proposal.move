@@ -48,6 +48,4 @@ module fibre::dao_proposal {
             pointer,
         }
     }
-
-    
 }
