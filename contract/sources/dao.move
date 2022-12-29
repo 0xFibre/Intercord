@@ -7,10 +7,13 @@ module fibre::dao {
     use sui::balance::{Self, Balance};
     use sui::sui::SUI;
 
+    use fibre::error;
+
     struct Dao has key {
         id: UID,
         name: String,
         description: String,
+        admin: address,
         config: Option<Config>,
         balance: Balance<SUI>
     }
@@ -19,23 +22,17 @@ module fibre::dao {
         logo_url: Option<String>
     }
 
-    struct DaoManagerCap has key { 
-        id: UID
-    }
+    public entry fun new(name: vector<u8>, description:vector<u8>, admin: address, ctx: &mut TxContext) {
+        let dao = create_dao(string::utf8(name), string::utf8(description), admin, ctx);
 
-    public entry fun new(name: vector<u8>, description:vector<u8>, ctx: &mut TxContext) {
-        let dao = create_dao(string::utf8(name), string::utf8(description), ctx);
-
-        transfer::transfer(DaoManagerCap { 
-            id: object::new(ctx) 
-        }, tx_context::sender(ctx));
         transfer::share_object(dao);
     }
 
-    fun create_dao(name: String, description: String, ctx: &mut TxContext): Dao {
+    fun create_dao(name: String, description: String, admin: address, ctx: &mut TxContext): Dao {
         Dao {
             id: object::new(ctx),
             name,
+            admin,
             description,
             config: option::none(),
             balance: balance::zero()
@@ -48,5 +45,9 @@ module fibre::dao {
 
     public fun balance_mut(self: &mut Dao): &mut Balance<SUI> {
         &mut self.balance
+    }
+
+    public fun assert_dao_admin(dao: &Dao, ctx: &mut TxContext) {
+        assert!(dao.admin == tx_context::sender(ctx), error::not_dao_admin())
     }
 }
