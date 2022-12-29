@@ -5,6 +5,7 @@ module fibre::dao_proposal {
 
     use sui::object::{Self, UID};
     use sui::transfer;
+    use sui::coin::{Coin};
     use sui::tx_context::{Self, TxContext};
 
     use fibre::dao::{Self, Dao};
@@ -13,7 +14,7 @@ module fibre::dao_proposal {
         id: UID,
         amount: u64,
         recipient: address,
-        coin_id: ID,
+        coin: Coin<T>,
     }
 
     struct VotingProposal has key {
