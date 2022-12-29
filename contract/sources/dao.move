@@ -56,6 +56,8 @@ module fibre::dao {
         }
     }
 
+    // query functions
+
     public fun get_balance(self: &Dao): &Balance<SUI> {
         &self.balance
     }
@@ -64,13 +66,21 @@ module fibre::dao {
         &mut self.balance
     }
 
-    public fun get_proposal_ids(self: &mut Dao): vector<ID> {
+    public fun get_proposals_count(self: &Dao): u64 {
+        self.proposals_count
+    }
+
+    public fun get_proposal_ids(self: &Dao): vector<ID> {
         self.proposal_ids
     }
+
+    // mutation functions
 
     public fun increment_proposals_count(self: &mut Dao) {
        self.proposals_count = self.proposals_count + 1;
     }
+
+    // assert functions
 
     public fun assert_dao_admin(self: &Dao, ctx: &mut TxContext) {
         assert!(self.admin == tx_context::sender(ctx), error::not_dao_admin())
