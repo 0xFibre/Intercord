@@ -7,7 +7,7 @@ module fibre::dao_treasury {
     use sui::transfer;
     use sui::event::emit;
 
-    use fibre::dao::{Self, Dao, DaoManagerCap};
+    use fibre::dao::{Self, Dao};
 
     struct Deposit has copy, drop {
         coin_id: ID,
@@ -35,7 +35,9 @@ module fibre::dao_treasury {
         balance::join(dao::balance_mut(dao), paid);
     }
 
-    public entry fun withdraw(_: &mut DaoManagerCap, dao: &mut Dao, amount: u64, ctx: &mut TxContext) {
+    public entry fun withdraw( dao: &mut Dao, amount: u64, ctx: &mut TxContext) {
+        dao::assert_dao_admin(dao, ctx);
+        
         let withdrawal = coin::take(dao::balance_mut(dao), amount, ctx);
         let caller = tx_context::sender(ctx);
         let reciever = tx_context::sender(ctx);
