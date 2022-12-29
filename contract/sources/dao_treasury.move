@@ -32,13 +32,13 @@ module fibre::dao_treasury {
             amount: balance::value(&paid)
         });
         
-        balance::join(dao::balance_mut(dao), paid);
+        balance::join(dao::get_balance_mut(dao), paid);
     }
 
     public entry fun withdraw(dao: &mut Dao, reciever: address, amount: u64, ctx: &mut TxContext) {
         dao::assert_dao_admin(dao, ctx);
         
-        let withdrawal = coin::take(dao::balance_mut(dao), amount, ctx);
+        let withdrawal = coin::take(dao::get_balance_mut(dao), amount, ctx);
         let sender = tx_context::sender(ctx);
 
         emit(Withdrawal { 

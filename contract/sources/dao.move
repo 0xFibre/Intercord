@@ -54,11 +54,11 @@ module fibre::dao {
         }
     }
 
-    public fun balance(self: &Dao): &Balance<SUI> {
+    public fun get_balance(self: &Dao): &Balance<SUI> {
         &self.balance
     }
 
-    public fun balance_mut(self: &mut Dao): &mut Balance<SUI> {
+    public fun get_balance_mut(self: &mut Dao): &mut Balance<SUI> {
         &mut self.balance
     }
 
