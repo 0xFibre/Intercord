@@ -1,11 +1,12 @@
 module fibre::dao {
-    use sui::object::{Self, UID};
+    use sui::object::{Self, UID, ID};
     use std::string::{Self, String};
     use sui::tx_context::{Self, TxContext};
     use std::option::{Self, Option};
     use sui::transfer;
     use sui::balance::{Self, Balance};
     use sui::sui::SUI;
+    use sui::event::emit;
 
     use fibre::error;
 
@@ -18,12 +19,22 @@ module fibre::dao {
         balance: Balance<SUI>
     }
 
+    struct DaoCreated has copy, drop {
+        id: ID,
+        admin: address,
+    }
+
     struct Config has store {
         logo_url: Option<String>
     }
 
     public entry fun new(name: vector<u8>, description:vector<u8>, admin: address, ctx: &mut TxContext) {
         let dao = create_dao(string::utf8(name), string::utf8(description), admin, ctx);
+
+        emit(DaoCreated { 
+            id: object::uid_to_inner(&dao.id),
+            admin: dao.admin
+        });
 
         transfer::share_object(dao);
     }
