@@ -1,7 +1,6 @@
 module fibre::dao_proposal {
     use std::string::{Self, String};
     use std::vector;
-    use std::type_name::{Self, TypeName};
 
     use sui::object::{Self, UID};
     use sui::transfer;
@@ -17,21 +16,24 @@ module fibre::dao_proposal {
         coin: Coin<T>,
     }
 
-    struct VotingProposal has key {
-        id: UID,
-    }
-
     struct Proposal has key, store {
         id: UID,
-        type: TypeName,
-        status: TypeName,
+        type: String,
+        status: String,
         text: String,
         proposer: address,
         pointer: u64
     }
 
-    public entry fun new<T: store, S: store>(dao: &mut Dao,text: vector<u8>, ctx: &mut TxContext) {
-        let proposal = create_proposal<T, S>(text, dao::get_proposals_count(dao), ctx);
+    const VOTING_PROPOSAL: vector<u8> = b"VotingProposal";
+    const COIN_TRANSFER_PROPOSAL: vector<u8> = b"CoinTransferProposal";
+
+    const ACTIVE_STATUS: vector<u8> = b"Active";
+    const APPROVED_STATUS: vector<u8> = b"Approved";
+    const REJECTED_STATUS: vector<u8> = b"Rejected";
+
+    public entry fun new(dao: &mut Dao, text: vector<u8>, ctx: &mut TxContext) {
+        let proposal = create_proposal(text, dao::get_proposals_count(dao), ctx);
         let proposal_ids = dao::get_proposal_ids(dao);
 
         vector::push_back(&mut proposal_ids, object::id(&proposal));
@@ -39,11 +41,11 @@ module fibre::dao_proposal {
         transfer::share_object(proposal);
     }
 
-    fun create_proposal<T: store, S: store>(text: vector<u8>, pointer: u64, ctx: &mut TxContext): Proposal {
+    fun create_proposal(type: vector<u8>, text: vector<u8>, pointer: u64, ctx: &mut TxContext): Proposal {
         Proposal {
             id: object::new(ctx),
-            type: type_name::get<T>(),
-            status: type_name::get<S>(),
+            type: string::utf8(type),
+            status: string::utf8(ACTIVE_STATUS),
             text: string::utf8(text),
             proposer: tx_context::sender(ctx),
             pointer,
