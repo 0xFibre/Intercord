@@ -34,8 +34,4 @@ module fibre::dao_proposal {
             proposer: tx_context::sender(ctx)
         }
     }
-
-    public(friend) fun share(proposal: Proposal) {
-        transfer::share_object(proposal);
-    }
 }
