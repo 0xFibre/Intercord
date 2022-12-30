@@ -1,14 +1,13 @@
 
 module fibre::dao_member {
-    use std::vector;
-
     use sui::object::{Self, UID, ID};
-    use sui::tx_context::{Self, TxContext};
-    use sui::table::{Self, Table};
+    use sui::tx_context::{TxContext};
+    use sui::table;
     use sui::transfer;
     use sui::event::emit;
 
     use fibre::dao::{Self, Dao};
+    use fibre::error;
 
     struct Member has key, store {
         id: UID,
@@ -32,7 +31,7 @@ module fibre::dao_member {
     }
 
     public entry fun add_member(dao: &mut Dao, address: address, ctx: &mut TxContext) {
-        dao::assert_dao_admin(dao, ctx);
+        assert_not_member(dao, address);
 
         let member = new(address, ctx);
         let dao_members = dao::members_mut(dao);
@@ -46,6 +45,15 @@ module fibre::dao_member {
             }
         );
 
-        transfer::share_object(member);
+        transfer::transfer(member, address);
+    }
+
+    fun is_member(dao: &Dao, address: address): bool {
+        table::contains(dao::members(dao), address)
+    }
+
+    
+    fun assert_not_member(dao: &Dao, address: address) {
+        assert!(!is_member(dao, address), error::already_dao_member())
     }
 }

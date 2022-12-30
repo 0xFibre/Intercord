@@ -100,6 +100,7 @@ module fibre::dao {
        self.proposals_count = self.proposals_count + 1;
     }
 
+
     // Assertion functions
 
     public fun assert_dao_admin(self: &Dao, ctx: &mut TxContext) {
