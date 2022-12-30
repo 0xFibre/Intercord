@@ -15,7 +15,7 @@ module fibre::dao_proposal {
         recipient: address
     }
 
-    struct PollProposal has key {
+    struct PollProposal has key, store {
         id: UID,
         options: vector<String>
     }
@@ -70,6 +70,28 @@ module fibre::dao_proposal {
         };
 
         field::add<u8, CoinTransferProposal<T>>(&mut proposal.id, DYNAMIC_FIELD_KEY, value);
+        record_proposal(dao, proposal);
+    }
+
+    public entry fun create_poll_proposal(dao: &mut Dao, text: vector<u8>, options: vector<vector<u8>>, ctx: &mut TxContext) {
+        let proposal = new(POLL_PROPOSAL_TYPE, text, dao::proposals_count(dao), ctx);
+
+        let string_options = vector::empty<String>();
+        let i = 0;
+
+        while(vector::length(&string_options) < vector::length(&options)) {
+            let option = vector::borrow(&options, i);
+            vector::push_back(&mut string_options, string::utf8(*option));
+
+            i = i + 1;
+        };
+
+        let value = PollProposal {
+            id: object::new(ctx),
+            options: string_options
+        };
+
+        field::add<u8, PollProposal>(&mut proposal.id, DYNAMIC_FIELD_KEY, value);
         record_proposal(dao, proposal);
     }
 }
