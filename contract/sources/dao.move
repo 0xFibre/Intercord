@@ -18,9 +18,11 @@ module fibre::dao {
         description: String,
         admin: address,
         config: Option<Config>,
-        balance: Balance<SUI>,
         proposals_count: u64,
-        proposal_ids: vector<ID>
+        members_count: u64,
+        balance: Balance<SUI>,
+        proposals: vector<ID>,
+        members: vector<ID>
     }
 
     struct DaoCreated has copy, drop {
@@ -32,55 +34,65 @@ module fibre::dao {
         logo_url: Option<String>
     }
 
-    public entry fun new(name: vector<u8>, description:vector<u8>, admin: address, ctx: &mut TxContext) {
-        let dao = create_dao(string::utf8(name), string::utf8(description), admin, ctx);
+    fun new(name: vector<u8>, description:vector<u8>, admin: address, ctx: &mut TxContext): Dao {
+        let id = object::new(ctx);
 
-        emit(DaoCreated { 
-            id: object::uid_to_inner(&dao.id),
-            admin: dao.admin
-        });
+        emit(DaoCreated { id: object::uid_to_inner(&id), admin });
+
+        Dao {
+            id,
+            name: string::utf8(name),
+            admin,
+            description: string::utf8(description),
+            members_count: 0,
+            proposals_count: 0,
+            balance: balance::zero(),
+            config: option::none<Config>(),
+            members: vector::empty<ID>(),
+            proposals: vector::empty<ID>()
+        }
+    }
+
+    public entry fun create_dao(name: vector<u8>, description: vector<u8>, admin: address, ctx: &mut TxContext) {
+        let dao = new(name, description, admin, ctx);
 
         transfer::share_object(dao);
     }
 
-    fun create_dao(name: String, description: String, admin: address, ctx: &mut TxContext): Dao {
-        Dao {
-            id: object::new(ctx),
-            name,
-            admin,
-            description,
-            config: option::none(),
-            balance: balance::zero(),
-            proposals_count: 0,
-            proposal_ids: vector::empty<ID>()
-        }
-    }
+    
+    // Getter functions
 
-    // query functions
-
-    public fun get_balance(self: &Dao): &Balance<SUI> {
+    public fun balance(self: &Dao): &Balance<SUI> {
         &self.balance
     }
 
-    public fun get_balance_mut(self: &mut Dao): &mut Balance<SUI> {
+    public fun balance_mut(self: &mut Dao): &mut Balance<SUI> {
         &mut self.balance
     }
 
-    public fun get_proposals_count(self: &Dao): u64 {
+    public fun proposals_count(self: &Dao): u64 {
         self.proposals_count
     }
 
-    public fun get_proposal_ids(self: &Dao): vector<ID> {
-        self.proposal_ids
+    public fun proposals(self: &Dao): &vector<ID> {
+        &self.proposals
     }
 
-    // mutation functions
+    public fun members(self: &Dao): &vector<ID> {
+        &self.members
+    }
+
+    public fun members_mut(self: &mut Dao): &mut vector<ID> {
+        &mut self.members
+    }
+
+    // Setter functions
 
     public fun increment_proposals_count(self: &mut Dao) {
        self.proposals_count = self.proposals_count + 1;
     }
 
-    // assert functions
+    // Assertion functions
 
     public fun assert_dao_admin(self: &Dao, ctx: &mut TxContext) {
         assert!(self.admin == tx_context::sender(ctx), error::not_dao_admin())
