@@ -25,6 +25,7 @@ module fibre::dao_proposal {
         id: UID,
         type: u8,
         status: u8,
+        title: String,
         text: String,
         proposer: address,
         pointer: u64
@@ -32,14 +33,15 @@ module fibre::dao_proposal {
 
     const DYNAMIC_FIELD_KEY: u8 = 0;
 
-    const POLL_PROPOSAL_TYPE: u8 = 0;
-    const COIN_TRANSFER_PROPOSAL_TYPE: u8 = 1;
+    const PROPOSAL_TYPE: u8 = 0;
+    const POLL_PROPOSAL_TYPE: u8 = 1;
+    const COIN_TRANSFER_PROPOSAL_TYPE: u8 = 2;
 
     const ACTIVE_STATUS: u8 = 0;
     const APPROVED_STATUS: u8 = 1;
     const REJECTED_STATUS: u8 = 2;
 
-    fun new(type: u8, text: vector<u8>, pointer: u64, ctx: &mut TxContext): Proposal {
+    fun new(type: u8, title: vector<u8>, text: vector<u8>, pointer: u64, ctx: &mut TxContext): Proposal {
         let id = object::new(ctx);
 
         Proposal {
@@ -47,6 +49,7 @@ module fibre::dao_proposal {
             type,
             pointer,
             status: ACTIVE_STATUS,
+            title: string::utf8(title),
             text: string::utf8(text),
             proposer: tx_context::sender(ctx)
         }
@@ -61,23 +64,15 @@ module fibre::dao_proposal {
         transfer::share_object(proposal);
     }
 
-    public entry fun create_transfer_proposal<T>(dao: &mut Dao, text: vector<u8>, amount: u64, recipient: address, ctx: &mut TxContext) {
-        let proposal = new(COIN_TRANSFER_PROPOSAL_TYPE, text, dao::proposals_count(dao), ctx);
-
-        let value = CoinTransferProposal<T> {
-            id: object::new(ctx),
-            amount,
-            recipient
-        };
-
-        field::add<u8, CoinTransferProposal<T>>(&mut proposal.id, DYNAMIC_FIELD_KEY, value);
+    public entry fun create_proposal<T>(dao: &mut Dao, title: vector<u8>, text: vector<u8>, ctx: &mut TxContext) {
+        let proposal = new(PROPOSAL_TYPE, title, text, dao::proposals_count(dao), ctx);
         record_proposal(dao, proposal);
     }
 
     public entry fun create_poll_proposal(dao: &mut Dao, text: vector<u8>, options: vector<vector<u8>>, ctx: &mut TxContext) {
         assert!(!vector::is_empty(&options), error::empty_poll_option());
 
-        let proposal = new(POLL_PROPOSAL_TYPE, text, dao::proposals_count(dao), ctx);
+        let proposal = new(POLL_PROPOSAL_TYPE, b"Poll Proposal", text, dao::proposals_count(dao), ctx);
 
         let string_options = vector::empty<String>();
         let i = 0;
@@ -97,4 +92,18 @@ module fibre::dao_proposal {
         field::add<u8, PollProposal>(&mut proposal.id, DYNAMIC_FIELD_KEY, value);
         record_proposal(dao, proposal);
     }
+
+    public entry fun create_coin_transfer_proposal<T>(dao: &mut Dao, text: vector<u8>, amount: u64, recipient: address, ctx: &mut TxContext) {
+        let proposal = new(COIN_TRANSFER_PROPOSAL_TYPE, b"Coin Transfer Proposal", text, dao::proposals_count(dao), ctx);
+
+        let value = CoinTransferProposal<T> {
+            id: object::new(ctx),
+            amount,
+            recipient
+        };
+
+        field::add<u8, CoinTransferProposal<T>>(&mut proposal.id, DYNAMIC_FIELD_KEY, value);
+        record_proposal(dao, proposal);
+    }
+
 }
