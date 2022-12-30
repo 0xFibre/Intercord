@@ -5,6 +5,7 @@ module fibre::dao_proposal {
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
+    use sui::table::{Self, Table};
     use sui::dynamic_field as field;
 
     use fibre::dao::{Self, Dao};
@@ -28,7 +29,9 @@ module fibre::dao_proposal {
         title: String,
         text: String,
         proposer: address,
-        pointer: u64
+        pointer: u64,
+        member_votes: Table<address, u8>,
+        votes_count: Table<u8, u64>,
     }
 
     const DYNAMIC_FIELD_KEY: u8 = 0;
@@ -41,6 +44,9 @@ module fibre::dao_proposal {
     const APPROVED_STATUS: u8 = 1;
     const REJECTED_STATUS: u8 = 2;
 
+    const VOTE_YES: u8 = 0;
+    const VOTE_NO: u8 = 1;
+
     fun new(type: u8, title: vector<u8>, text: vector<u8>, pointer: u64, ctx: &mut TxContext): Proposal {
         let id = object::new(ctx);
 
@@ -51,7 +57,9 @@ module fibre::dao_proposal {
             status: ACTIVE_STATUS,
             title: string::utf8(title),
             text: string::utf8(text),
-            proposer: tx_context::sender(ctx)
+            proposer: tx_context::sender(ctx),
+            member_votes: table::new(ctx),
+            votes_count: table::new(ctx)
         }
     }
 
@@ -106,4 +114,7 @@ module fibre::dao_proposal {
         record_proposal(dao, proposal);
     }
 
+    // public entry fun vote_proposal(dao: &mut Dao, proposal: &mut Proposal, vote: u8, ctx: &mut TxContext) {
+    //     let member = dao_member::member(tx_context::sender(ctx));
+    // }
 }
