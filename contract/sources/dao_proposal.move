@@ -10,7 +10,7 @@ module fibre::dao_proposal {
 
     use fibre::dao::{Self, Dao};
     use fibre::dao_member::{Self, Member};
-    use fibre::number::{Self, Number};
+    use fibre::u64::{Self, U64};
     use fibre::error;
 
     struct CoinTransferProposal<phantom T> has key, store {
@@ -33,7 +33,7 @@ module fibre::dao_proposal {
         proposer: address,
         pointer: u64,
         member_votes: Table<address, u8>,
-        votes_count: Table<u8, Number>,
+        votes_count: Table<u8, U64>,
     }
 
     const DYNAMIC_FIELD_KEY: u8 = 0;
@@ -130,11 +130,11 @@ module fibre::dao_proposal {
 
         if(table::contains(&proposal.votes_count, vote)) {
             let votes_count = table::borrow_mut(&mut proposal.votes_count, vote);
-            number::add(votes_count, 1);
+            u64::add(votes_count, 1);
         } else {
-            table::add(&mut proposal.votes_count, vote, number::new(1));
+            table::add(&mut proposal.votes_count, vote, u64::new(1));
         };
-        
+
         table::add(&mut proposal.member_votes, sender, vote);
     }
 
@@ -142,7 +142,7 @@ module fibre::dao_proposal {
         table::contains(&proposal.member_votes, address)
     }
 
-    fun votes_count(proposal: &Proposal, vote: u8): &Number {
+    fun votes_count(proposal: &Proposal, vote: u8): &U64 {
         table::borrow(&proposal.votes_count, vote)
     }
 
