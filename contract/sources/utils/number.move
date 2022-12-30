@@ -9,19 +9,23 @@ module fibre::number {
         }
     }
 
-    public fun add(number: &mut Number, value: u64) {
-        number.value = number.value + value
+    public fun add(self: &mut Number, value: u64) {
+        self.value = self.value + value
     }
 
-    public fun sub(number: &mut Number, value: u64) {
-        number.value = number.value - value
+    public fun sub(self: &mut Number, value: u64) {
+        self.value = self.value - value
     }
 
-    public fun mul(number: &mut Number, value: u64) {
-        number.value = number.value * value
+    public fun mul(self: &mut Number, value: u64) {
+        self.value = self.value * value
     }
 
-    public fun div(number: &mut Number, value: u64) {
-        number.value = number.value / value
+    public fun div(self: &mut Number, value: u64) {
+        self.value = self.value / value
+    }
+
+    public fun value(self: &Number): u64 {
+        self.value
     }
 }
