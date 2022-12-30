@@ -12,6 +12,10 @@ module fibre::dao {
     use sui::event::emit;
 
     use fibre::error;
+
+    friend fibre::dao_proposal;
+    friend fibre::dao_member;
+    friend fibre::dao_treasury;
     
     struct Dao has key {
         id: UID,
@@ -70,7 +74,7 @@ module fibre::dao {
         &self.balance
     }
 
-    public fun balance_mut(self: &mut Dao): &mut Balance<SUI> {
+    public(friend) fun balance_mut(self: &mut Dao): &mut Balance<SUI> {
         &mut self.balance
     }
 
@@ -82,7 +86,7 @@ module fibre::dao {
         &self.proposals
     }
 
-    public fun proposals_mut(self: &mut Dao): &mut vector<ID> {
+    public(friend) fun proposals_mut(self: &mut Dao): &mut vector<ID> {
         &mut self.proposals
     }
 
@@ -90,7 +94,7 @@ module fibre::dao {
         &self.members
     }
 
-    public fun members_mut(self: &mut Dao): &mut Table<address, ID> {
+    public(friend) fun members_mut(self: &mut Dao): &mut Table<address, ID> {
         &mut self.members
     }
 

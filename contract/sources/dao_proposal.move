@@ -9,6 +9,8 @@ module fibre::dao_proposal {
     use sui::dynamic_field as field;
 
     use fibre::dao::{Self, Dao};
+    use fibre::dao_member::{Self, Member};
+    use fibre::number::{Self, Number};
     use fibre::error;
 
     struct CoinTransferProposal<phantom T> has key, store {
@@ -31,7 +33,7 @@ module fibre::dao_proposal {
         proposer: address,
         pointer: u64,
         member_votes: Table<address, u8>,
-        votes_count: Table<u8, u64>,
+        votes_count: Table<u8, Number>,
     }
 
     const DYNAMIC_FIELD_KEY: u8 = 0;
@@ -114,7 +116,37 @@ module fibre::dao_proposal {
         record_proposal(dao, proposal);
     }
 
-    // public entry fun vote_proposal(dao: &mut Dao, proposal: &mut Proposal, vote: u8, ctx: &mut TxContext) {
-    //     let member = dao_member::member(tx_context::sender(ctx));
-    // }
+    public entry fun vote_proposal(dao: &mut Dao, proposal: &mut Proposal, member: &mut Member, vote: u8, ctx: &mut TxContext) {
+        let sender = tx_context::sender(ctx);
+
+        dao_member::assert_member(dao, sender);
+        dao_member::assert_member_id(dao, member, ctx);
+
+        assert_not_voted(proposal, sender);
+
+
+        // let prop = vector::borrow(dao::proposals(dao), proposal.pointer);
+
+
+        if(table::contains(&proposal.votes_count, vote)) {
+            let votes_count = table::borrow_mut(&mut proposal.votes_count, vote);
+            number::add(votes_count, 1);
+        } else {
+            table::add(&mut proposal.votes_count, vote, number::new(1));
+        };
+        
+        table::add(&mut proposal.member_votes, sender, vote);
+    }
+
+    fun has_voted(proposal: &Proposal, address: address): bool {
+        table::contains(&proposal.member_votes, address)
+    }
+
+    fun votes_count(proposal: &Proposal, vote: u8): &Number {
+        table::borrow(&proposal.votes_count, vote)
+    }
+
+    fun assert_not_voted(proposal: &Proposal, address: address) {
+        assert!(!has_voted(proposal, address), error::already_voted_proposal())
+    }
 }

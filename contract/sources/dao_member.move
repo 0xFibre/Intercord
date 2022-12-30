@@ -1,13 +1,15 @@
 
 module fibre::dao_member {
     use sui::object::{Self, UID, ID};
-    use sui::tx_context::{TxContext};
+    use sui::tx_context::{Self, TxContext};
     use sui::table;
     use sui::transfer;
     use sui::event::emit;
 
     use fibre::dao::{Self, Dao};
     use fibre::error;
+
+    friend fibre::dao_proposal;
 
     struct Member has key, store {
         id: UID,
@@ -52,8 +54,19 @@ module fibre::dao_member {
         table::contains(dao::members(dao), address)
     }
 
-    
-    fun assert_not_member(dao: &Dao, address: address) {
+    public(friend) fun get_member_id(dao: &Dao, address: address): &ID {
+        table::borrow(dao::members(dao), address)
+    }
+
+    public(friend) fun assert_not_member(dao: &Dao, address: address) {
         assert!(!is_member(dao, address), error::already_dao_member())
+    }
+
+    public(friend) fun assert_member(dao: &Dao, address: address) {
+        assert!(is_member(dao, address), error::not_dao_member())
+    }
+
+    public(friend) fun assert_member_id(dao: &Dao, member: &Member, ctx: &TxContext) {
+        assert!(object::borrow_id(member) == get_member_id(dao, tx_context::sender(ctx)), error::invalid_member_id());
     }
 }
