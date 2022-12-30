@@ -124,10 +124,14 @@ module fibre::dao_proposal {
         dao_member::assert_member_id(dao, member, ctx);
 
         assert_not_voted(proposal, sender);
-        vote_proposal_internal(proposal, vote, ctx);
+        record_proposal_vote(proposal, vote, ctx);
+
+        if(can_execute_proposal(proposal)) {
+            execute_proposal(proposal, ctx);
+        }
     }
 
-    fun vote_proposal_internal(proposal: &mut Proposal, vote: u8, ctx: &TxContext) {
+    fun record_proposal_vote(proposal: &mut Proposal, vote: u8, ctx: &TxContext) {
         if(table::contains(&proposal.votes_count, vote)) {
             let votes_count = table::borrow_mut(&mut proposal.votes_count, vote);
             u64::add(votes_count, 1);
@@ -136,6 +140,14 @@ module fibre::dao_proposal {
         };
 
         table::add(&mut proposal.member_votes, tx_context::sender(ctx), vote);
+    }
+
+    fun execute_proposal(proposal: &mut Proposal, ctx: &mut TxContext) {
+
+    }
+
+    fun can_execute_proposal(proposal: &Proposal): bool {
+        true
     }
 
     fun has_voted(proposal: &Proposal, address: address): bool {
