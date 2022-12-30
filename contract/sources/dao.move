@@ -37,7 +37,12 @@ module fibre::dao {
     fun new(name: vector<u8>, description:vector<u8>, admin: address, ctx: &mut TxContext): Dao {
         let id = object::new(ctx);
 
-        emit(DaoCreated { id: object::uid_to_inner(&id), admin });
+        emit(
+            DaoCreated { 
+                id: object::uid_to_inner(&id), 
+                admin 
+            }
+        );
 
         Dao {
             id,

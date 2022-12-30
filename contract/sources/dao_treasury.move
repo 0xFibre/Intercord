@@ -27,11 +27,13 @@ module fibre::dao_treasury {
         let coin_balance = coin::balance_mut(payment);
         let paid = balance::split(coin_balance, amount);
 
-        emit(CoinDeposit { 
-            coin_id: object::id(payment),
-            depositor: tx_context::sender(ctx),
-            amount: balance::value(&paid)
-        });
+        emit(
+            CoinDeposit { 
+                coin_id: object::id(payment),
+                depositor: tx_context::sender(ctx),
+                amount: balance::value(&paid)
+            }
+        );
         
         balance::join(dao::balance_mut(dao), paid);
     }
@@ -41,11 +43,13 @@ module fibre::dao_treasury {
         
         let withdrawal = coin::take(dao::balance_mut(dao), amount, ctx);
 
-        emit(CoinWithdrawal { 
-            coin_id: object::id(&withdrawal),
-            reciever,
-            amount
-        });
+        emit(
+            CoinWithdrawal { 
+                coin_id: object::id(&withdrawal),
+                reciever,
+                amount
+            }
+        );
 
         transfer::transfer(withdrawal, reciever);
     }
