@@ -78,6 +78,10 @@ module fibre::dao {
         &self.proposals
     }
 
+    public fun proposals_mut(self: &mut Dao): &mut vector<ID> {
+        &mut self.proposals
+    }
+
     public fun members(self: &Dao): &vector<ID> {
         &self.members
     }
