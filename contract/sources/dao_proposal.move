@@ -8,6 +8,7 @@ module fibre::dao_proposal {
     use sui::dynamic_field as field;
 
     use fibre::dao::{Self, Dao};
+    use fibre::error;
 
     struct CoinTransferProposal<phantom T> has key, store {
         id: UID,
@@ -74,6 +75,8 @@ module fibre::dao_proposal {
     }
 
     public entry fun create_poll_proposal(dao: &mut Dao, text: vector<u8>, options: vector<vector<u8>>, ctx: &mut TxContext) {
+        assert!(!vector::is_empty(&options), error::empty_poll_option());
+
         let proposal = new(POLL_PROPOSAL_TYPE, text, dao::proposals_count(dao), ctx);
 
         let string_options = vector::empty<String>();
