@@ -25,6 +25,8 @@ module fibre::dao_member {
     }
 
     public entry fun add_member(dao: &mut Dao, address: address, ctx: &mut TxContext) {
+        dao::assert_dao_admin(dao, ctx);
+
         let member = new(address, ctx);
         let dao_members = dao::members_mut(dao);
 
