@@ -22,7 +22,7 @@ module fibre::dao {
         name: String,
         description: String,
         admin: address,
-        config: Option<Config>,
+        config: Config,
         proposals_count: u64,
         balance: Balance<SUI>,
         proposals: vector<ID>,
@@ -35,7 +35,7 @@ module fibre::dao {
     }
 
     struct Config has store {
-        logo_url: Option<String>
+        logo_url: Option<String>,
     }
 
     fun new(name: vector<u8>, description:vector<u8>, admin: address, ctx: &mut TxContext): Dao {
@@ -55,7 +55,9 @@ module fibre::dao {
             description: string::utf8(description),
             proposals_count: 0,
             balance: balance::zero(),
-            config: option::none(),
+            config: Config {
+                logo_url: option::none(),
+            },
             members: table::new(ctx),
             proposals: vector::empty()
         }
