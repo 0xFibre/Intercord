@@ -54,6 +54,10 @@ module fibre::dao_member {
         table::contains(dao::members(dao), address)
     }
 
+    public(friend) fun get_members_count(dao: &Dao, address: address): u64 {
+        table::length(dao::members(dao))
+    }
+
     public(friend) fun get_member_id(dao: &Dao, address: address): &ID {
         table::borrow(dao::members(dao), address)
     }
