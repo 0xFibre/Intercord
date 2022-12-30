@@ -2,7 +2,7 @@ module fibre::dao_proposal {
     use std::string::{Self, String};
     use std::vector;
 
-    use sui::object::{Self, UID};
+    use sui::object::{Self, UID, ID};
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::table::{Self, Table};
@@ -32,6 +32,7 @@ module fibre::dao_proposal {
         text: String,
         proposer: address,
         pointer: u64,
+        dao_id: ID,
         member_votes: Table<address, u8>,
         votes_count: Table<u8, U64>,
     }
@@ -50,19 +51,19 @@ module fibre::dao_proposal {
     const VOTE_NO: u8 = 1;
     const VOTE_ABSTAIN: u8 = 2;
 
-    fun new(type: u8, title: vector<u8>, text: vector<u8>, pointer: u64, ctx: &mut TxContext): Proposal {
-        let id = object::new(ctx);
+    fun new(dao: &Dao, type: u8, title: vector<u8>, text: vector<u8>, ctx: &mut TxContext): Proposal {
 
         Proposal {
-            id,
-            type,
-            pointer,
+            id: object::new(ctx),
+            dao_id: object::id(dao),
             status: ACTIVE_STATUS,
             title: string::utf8(title),
             text: string::utf8(text),
             proposer: tx_context::sender(ctx),
             member_votes: table::new(ctx),
-            votes_count: table::new(ctx)
+            votes_count: table::new(ctx),
+            pointer: dao::proposals_count(dao),
+            type,
         }
     }
 
@@ -76,14 +77,14 @@ module fibre::dao_proposal {
     }
 
     public entry fun create_proposal<T>(dao: &mut Dao, title: vector<u8>, text: vector<u8>, ctx: &mut TxContext) {
-        let proposal = new(PROPOSAL_TYPE, title, text, dao::proposals_count(dao), ctx);
+        let proposal = new(dao, PROPOSAL_TYPE, title, text, ctx);
         record_proposal(dao, proposal);
     }
 
     public entry fun create_poll_proposal(dao: &mut Dao, text: vector<u8>, options: vector<vector<u8>>, ctx: &mut TxContext) {
         assert!(!vector::is_empty(&options), error::empty_poll_option());
 
-        let proposal = new(POLL_PROPOSAL_TYPE, b"Poll Proposal", text, dao::proposals_count(dao), ctx);
+        let proposal = new(dao, POLL_PROPOSAL_TYPE, b"Poll Proposal", text, ctx);
 
         let string_options = vector::empty<String>();
 
@@ -105,7 +106,7 @@ module fibre::dao_proposal {
     }
 
     public entry fun create_coin_transfer_proposal<T>(dao: &mut Dao, text: vector<u8>, amount: u64, recipient: address, ctx: &mut TxContext) {
-        let proposal = new(COIN_TRANSFER_PROPOSAL_TYPE, b"Coin Transfer Proposal", text, dao::proposals_count(dao), ctx);
+        let proposal = new(dao, COIN_TRANSFER_PROPOSAL_TYPE, b"Coin Transfer Proposal", text, ctx);
 
         let value = CoinTransferProposal<T> {
             id: object::new(ctx),
@@ -120,6 +121,7 @@ module fibre::dao_proposal {
     public entry fun vote_proposal(dao: &mut Dao, proposal: &mut Proposal, member: &mut Member, vote: u8, ctx: &mut TxContext) {
         let sender = tx_context::sender(ctx);
 
+        assert_dao_proposal(dao, proposal);
         dao_member::assert_member(dao, sender);
         dao_member::assert_member_id(dao, member, ctx);
 
@@ -160,5 +162,9 @@ module fibre::dao_proposal {
 
     fun assert_not_voted(proposal: &Proposal, address: address) {
         assert!(!has_voted(proposal, address), error::already_voted_proposal())
+    }
+
+    fun assert_dao_proposal(dao: &Dao, proposal: &Proposal) {
+        assert!(object::id(dao) == proposal.dao_id, error::invalid_dao_proposal())
     }
 }
