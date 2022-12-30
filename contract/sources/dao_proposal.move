@@ -48,6 +48,7 @@ module fibre::dao_proposal {
 
     const VOTE_YES: u8 = 0;
     const VOTE_NO: u8 = 1;
+    const VOTE_ABSTAIN: u8 = 2;
 
     fun new(type: u8, title: vector<u8>, text: vector<u8>, pointer: u64, ctx: &mut TxContext): Proposal {
         let id = object::new(ctx);
@@ -85,8 +86,8 @@ module fibre::dao_proposal {
         let proposal = new(POLL_PROPOSAL_TYPE, b"Poll Proposal", text, dao::proposals_count(dao), ctx);
 
         let string_options = vector::empty<String>();
-        let i = 0;
 
+        let i = 0;
         while(vector::length(&string_options) < vector::length(&options)) {
             let option = vector::borrow(&options, i);
             vector::push_back(&mut string_options, string::utf8(*option));
