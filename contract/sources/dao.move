@@ -7,6 +7,7 @@ module fibre::dao {
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::balance::{Self, Balance};
+    use sui::table::{Self, Table};
     use sui::sui::SUI;
     use sui::event::emit;
 
@@ -19,10 +20,9 @@ module fibre::dao {
         admin: address,
         config: Option<Config>,
         proposals_count: u64,
-        members_count: u64,
         balance: Balance<SUI>,
         proposals: vector<ID>,
-        members: vector<ID>
+        members: Table<address, ID>
     }
 
     struct DaoCreated has copy, drop {
@@ -49,12 +49,11 @@ module fibre::dao {
             name: string::utf8(name),
             admin,
             description: string::utf8(description),
-            members_count: 0,
             proposals_count: 0,
             balance: balance::zero(),
-            config: option::none<Config>(),
-            members: vector::empty<ID>(),
-            proposals: vector::empty<ID>()
+            config: option::none(),
+            members: table::new(ctx),
+            proposals: vector::empty()
         }
     }
 
@@ -87,11 +86,11 @@ module fibre::dao {
         &mut self.proposals
     }
 
-    public fun members(self: &Dao): &vector<ID> {
+    public fun members(self: &Dao): &Table<address, ID> {
         &self.members
     }
 
-    public fun members_mut(self: &mut Dao): &mut vector<ID> {
+    public fun members_mut(self: &mut Dao): &mut Table<address, ID> {
         &mut self.members
     }
 

@@ -3,7 +3,8 @@ module fibre::dao_member {
     use std::vector;
 
     use sui::object::{Self, UID, ID};
-    use sui::tx_context::{TxContext};
+    use sui::tx_context::{Self, TxContext};
+    use sui::table::{Self, Table};
     use sui::transfer;
     use sui::event::emit;
 
@@ -36,7 +37,7 @@ module fibre::dao_member {
         let member = new(address, ctx);
         let dao_members = dao::members_mut(dao);
 
-        vector::push_back(dao_members, object::id(&member));
+        table::add(dao_members, address, object::id(&member));
 
         emit(
             NewMember {
