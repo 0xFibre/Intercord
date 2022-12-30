@@ -2,9 +2,10 @@
 module fibre::dao_member {
     use std::vector;
 
-    use sui::object::{Self, UID};
+    use sui::object::{Self, UID, ID};
     use sui::tx_context::{TxContext};
     use sui::transfer;
+    use sui::event::emit;
 
     use fibre::dao::{Self, Dao};
 
@@ -12,6 +13,11 @@ module fibre::dao_member {
         id: UID,
         address: address,
         votes_count: u64
+    }
+
+    struct NewMember has copy, drop {
+        dao_id: ID,
+        member_id: ID
     }
 
     fun new(address: address, ctx: &mut TxContext): Member {
@@ -31,6 +37,14 @@ module fibre::dao_member {
         let dao_members = dao::members_mut(dao);
 
         vector::push_back(dao_members, object::id(&member));
+
+        emit(
+            NewMember {
+                dao_id: object::id(dao),
+                member_id: object::id(&member)
+            }
+        );
+
         transfer::share_object(member);
     }
 }
