@@ -10,14 +10,17 @@ module fibre::error {
 
     // DAO proposal errors
 
-    public fun empty_poll_option(): u64 {
+    public fun invalid_dao_proposal(): u64 {
         ErrorPrefix + 10
     }
 
-    public fun already_voted_proposal(): u64 {
+    public fun empty_poll_option(): u64 {
         ErrorPrefix + 11
     }
 
+    public fun already_voted_proposal(): u64 {
+        ErrorPrefix + 12
+    }
 
     // DAO member errors
 
