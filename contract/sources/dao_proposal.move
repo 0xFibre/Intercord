@@ -122,6 +122,7 @@ module fibre::dao_proposal {
         let sender = tx_context::sender(ctx);
 
         assert_dao_proposal_match(dao, proposal);
+        
         dao_member::assert_member(dao, sender);
         dao_member::assert_dao_member_match(dao, member, ctx);
 
