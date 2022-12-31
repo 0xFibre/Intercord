@@ -10,7 +10,7 @@ module fibre::error {
 
     // DAO proposal errors
 
-    public fun invalid_dao_proposal(): u64 {
+    public fun dao_proposal_mismatch(): u64 {
         ErrorPrefix + 10
     }
 
@@ -32,7 +32,7 @@ module fibre::error {
         ErrorPrefix + 101
     }
 
-    public fun invalid_member_id(): u64 {
+    public fun dao_member_mismatch(): u64 {
         ErrorPrefix + 102
     }
 

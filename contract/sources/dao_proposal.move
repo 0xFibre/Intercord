@@ -121,9 +121,9 @@ module fibre::dao_proposal {
     public entry fun vote_proposal(dao: &mut Dao, proposal: &mut Proposal, member: &mut Member, vote: u8, ctx: &mut TxContext) {
         let sender = tx_context::sender(ctx);
 
-        assert_dao_proposal(dao, proposal);
+        assert_dao_proposal_match(dao, proposal);
         dao_member::assert_member(dao, sender);
-        dao_member::assert_member_id(dao, member, ctx);
+        dao_member::assert_dao_member_match(dao, member, ctx);
 
         assert_not_voted(proposal, sender);
         record_proposal_vote(proposal, vote, ctx);
@@ -164,7 +164,7 @@ module fibre::dao_proposal {
         assert!(!has_voted(proposal, address), error::already_voted_proposal())
     }
 
-    fun assert_dao_proposal(dao: &Dao, proposal: &Proposal) {
-        assert!(object::id(dao) == proposal.dao_id, error::invalid_dao_proposal())
+    fun assert_dao_proposal_match(dao: &Dao, proposal: &Proposal) {
+        assert!(&proposal.dao_id == object::borrow_id(dao), error::dao_proposal_mismatch())
     }
 }

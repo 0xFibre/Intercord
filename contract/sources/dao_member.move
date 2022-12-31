@@ -70,7 +70,7 @@ module fibre::dao_member {
         assert!(is_member(dao, address), error::not_dao_member())
     }
 
-    public(friend) fun assert_member_id(dao: &Dao, member: &Member, ctx: &TxContext) {
-        assert!(object::borrow_id(member) == get_member_id(dao, tx_context::sender(ctx)), error::invalid_member_id());
+    public(friend) fun assert_dao_member_match(dao: &Dao, member: &Member, ctx: &TxContext) {
+        assert!(get_member_id(dao, tx_context::sender(ctx)) == object::borrow_id(member), error::dao_member_mismatch());
     }
 }
