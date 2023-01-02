@@ -29,7 +29,7 @@ module fibre::dao_proposal {
         type: u8,
         status: u8,
         title: String,
-        text: String,
+        description: String,
         proposer: address,
         pointer: u64,
         dao_id: ID,
@@ -39,7 +39,7 @@ module fibre::dao_proposal {
 
     const DYNAMIC_FIELD_KEY: u8 = 0;
 
-    const PROPOSAL_TYPE: u8 = 0;
+    const PLAIN_PROPOSAL_TYPE: u8 = 0;
     const POLL_PROPOSAL_TYPE: u8 = 1;
     const COIN_TRANSFER_PROPOSAL_TYPE: u8 = 2;
 
@@ -51,14 +51,14 @@ module fibre::dao_proposal {
     const VOTE_NO: u8 = 1;
     const VOTE_ABSTAIN: u8 = 2;
 
-    fun new(dao: &Dao, type: u8, title: vector<u8>, text: vector<u8>, ctx: &mut TxContext): Proposal {
+    fun new(dao: &Dao, type: u8, title: vector<u8>, description: vector<u8>, ctx: &mut TxContext): Proposal {
 
         Proposal {
             id: object::new(ctx),
             dao_id: object::id(dao),
             status: ACTIVE_STATUS,
             title: string::utf8(title),
-            text: string::utf8(text),
+            description: string::utf8(description),
             proposer: tx_context::sender(ctx),
             member_votes: table::new(ctx),
             votes_count: table::new(ctx),
@@ -76,15 +76,15 @@ module fibre::dao_proposal {
         transfer::share_object(proposal);
     }
 
-    public entry fun create_proposal<T>(dao: &mut Dao, title: vector<u8>, text: vector<u8>, ctx: &mut TxContext) {
-        let proposal = new(dao, PROPOSAL_TYPE, title, text, ctx);
+    public entry fun create_plain_proposal(dao: &mut Dao, title: vector<u8>, description: vector<u8>, ctx: &mut TxContext) {
+        let proposal = new(dao, PLAIN_PROPOSAL_TYPE, title, description, ctx);
         record_proposal(dao, proposal);
     }
 
-    public entry fun create_poll_proposal(dao: &mut Dao, text: vector<u8>, options: vector<vector<u8>>, ctx: &mut TxContext) {
+    public entry fun create_poll_proposal(dao: &mut Dao, description: vector<u8>, options: vector<vector<u8>>, ctx: &mut TxContext) {
         assert!(!vector::is_empty(&options), error::empty_poll_option());
 
-        let proposal = new(dao, POLL_PROPOSAL_TYPE, b"Poll Proposal", text, ctx);
+        let proposal = new(dao, POLL_PROPOSAL_TYPE, b"Poll Proposal", description, ctx);
 
         let string_options = vector::empty<String>();
 
@@ -105,8 +105,8 @@ module fibre::dao_proposal {
         record_proposal(dao, proposal);
     }
 
-    public entry fun create_coin_transfer_proposal<T>(dao: &mut Dao, text: vector<u8>, amount: u64, recipient: address, ctx: &mut TxContext) {
-        let proposal = new(dao, COIN_TRANSFER_PROPOSAL_TYPE, b"Coin Transfer Proposal", text, ctx);
+    public entry fun create_coin_transfer_proposal<T>(dao: &mut Dao, description: vector<u8>, amount: u64, recipient: address, ctx: &mut TxContext) {
+        let proposal = new(dao, COIN_TRANSFER_PROPOSAL_TYPE, b"Coin Transfer Proposal", description, ctx);
 
         let value = CoinTransferProposal<T> {
             id: object::new(ctx),

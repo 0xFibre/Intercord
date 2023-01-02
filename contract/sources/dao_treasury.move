@@ -39,8 +39,6 @@ module fibre::dao_treasury {
     }
 
     public(friend) fun withdraw_coin(dao: &mut Dao, reciever: address, amount: u64, ctx: &mut TxContext) {
-        dao::assert_dao_admin(dao, ctx);
-        
         let withdrawal = coin::take(dao::balance_mut(dao), amount, ctx);
 
         emit(

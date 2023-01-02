@@ -1,17 +1,14 @@
 module fibre::dao {
     use std::string::{Self, String};
-    use std::option::{Self, Option};
     use std::vector;
 
     use sui::object::{Self, UID, ID};
-    use sui::tx_context::{Self, TxContext};
+    use sui::tx_context::{TxContext};
     use sui::transfer;
     use sui::balance::{Self, Balance};
     use sui::table::{Self, Table};
     use sui::sui::SUI;
     use sui::event::emit;
-
-    use fibre::error;
 
     friend fibre::dao_proposal;
     friend fibre::dao_member;
@@ -21,7 +18,6 @@ module fibre::dao {
         id: UID,
         name: String,
         description: String,
-        admin: address,
         config: Config,
         proposals_count: u64,
         balance: Balance<SUI>,
@@ -31,45 +27,68 @@ module fibre::dao {
 
     struct DaoCreated has copy, drop {
         id: ID,
-        admin: address,
+    }
+
+    struct Link has store {
+        data: String,
+        pointer: u64
     }
 
     struct Config has store {
-        logo_url: Option<String>,
+        logo_url: String,
+        cover_url: String,
+        links: vector<Link>
     }
 
-    fun new(name: vector<u8>, description:vector<u8>, admin: address, ctx: &mut TxContext): Dao {
+    fun new(name: vector<u8>, description:vector<u8>, logo_url: vector<u8>, cover_url: vector<u8>, links: vector<vector<u8>>, ctx: &mut TxContext): Dao {
         let id = object::new(ctx);
+        let config = Config {
+            logo_url: string::utf8(logo_url),
+            cover_url: string::utf8(cover_url),
+            links: parse_dao_links(links)
+        };
 
         emit(
             DaoCreated { 
                 id: object::uid_to_inner(&id), 
-                admin 
             }
         );
 
         Dao {
             id,
             name: string::utf8(name),
-            admin,
             description: string::utf8(description),
             proposals_count: 0,
             balance: balance::zero(),
-            config: Config {
-                logo_url: option::none(),
-            },
             members: table::new(ctx),
-            proposals: vector::empty()
+            proposals: vector::empty(),
+            config,
         }
     }
 
-    public entry fun create_dao(name: vector<u8>, description: vector<u8>, admin: address, ctx: &mut TxContext) {
-        let dao = new(name, description, admin, ctx);
+    public entry fun create_dao(name: vector<u8>, description: vector<u8>, logo_url: vector<u8>, cover_url: vector<u8>, links: vector<vector<u8>>, ctx: &mut TxContext) {
+        let dao = new(name, description, logo_url, cover_url, links, ctx);
 
         transfer::share_object(dao);
     }
 
-    
+    fun parse_dao_links(links: vector<vector<u8>>): vector<Link> {
+        let links_str = vector::empty<Link>();
+
+        let i = 0;
+        while(vector::length(&links_str) < vector::length(&links)) {
+            let link = Link { 
+                pointer: i, 
+                data: string::utf8(*vector::borrow(&links, i)) 
+            };
+
+            vector::push_back(&mut links_str, link);
+            i = i + 1;
+        };
+
+        links_str
+    }
+
     // Getter functions
 
     public fun balance(self: &Dao): &Balance<SUI> {
@@ -104,12 +123,5 @@ module fibre::dao {
 
     public fun increment_proposals_count(self: &mut Dao) {
        self.proposals_count = self.proposals_count + 1;
-    }
-
-
-    // Assertion functions
-
-    public fun assert_dao_admin(self: &Dao, ctx: &mut TxContext) {
-        assert!(self.admin == tx_context::sender(ctx), error::not_dao_admin())
     }
 }
