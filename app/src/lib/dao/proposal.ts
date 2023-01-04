@@ -100,4 +100,38 @@ export class Proposal {
 
     return proposals;
   }
+
+  async getProposal(id: string): Promise<IProposal> {
+    const object = await provider.getObject(id);
+
+    if (object.status == "Exists") {
+      const { fields } = <SuiData & SuiMoveObject>(
+        (<SuiObject>object.details).data
+      );
+
+      const proposal: IProposal = {
+        id: fields.id.id,
+        daoId: fields.dao_id,
+        description: fields.description,
+        title: fields.title,
+        status: fields.status,
+        type: fields.type,
+        pointer: fields.pointer,
+        proposer: fields.proposer,
+      };
+
+      const objects = await provider.getObjectsOwnedByObject(proposal.id);
+      if (objects.length > 0) {
+        const loadedObject = await provider.getObject(objects[0].objectId);
+        if (loadedObject.status === "Exists") {
+          const { data } = loadedObject.details;
+          proposal.meta = data.fields.value.fields;
+        }
+      }
+
+      return proposal;
+    }
+
+    throw new Error("Proposal not found");
+  }
 }
