@@ -99,7 +99,7 @@ const state: State = reactive({ loading: false, proposal: undefined });
 onMounted(async () => {
   state.loading = true;
   state.proposal = await dao.proposal.getProposal(
-    route.params.proposalId as string
+    <string>route.params.proposalId
   );
   state.loading = false;
 });
