@@ -6,14 +6,14 @@
       type="number"
       variant="underlined"
       placeholder="Transfer amount"
-      @input="(e) => $emit('updateRest', e.target.value, 0)"
+      @input="(e:any) => $emit('updateRest', e.target.value, 0)"
     />
 
     <v-text-field
       type="text"
       variant="underlined"
       placeholder="Reciever address"
-      @input="(e) => $emit('updateRest', e.target.value, 1)"
+      @input="(e:any) => $emit('updateRest', e.target.value, 1)"
     />
   </div>
 </template>

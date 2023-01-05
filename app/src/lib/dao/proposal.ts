@@ -124,7 +124,7 @@ export class Proposal {
       if (objects.length > 0) {
         const loadedObject = await provider.getObject(objects[0].objectId);
         if (loadedObject.status === "Exists") {
-          const { data } = loadedObject.details;
+          const { data } = loadedObject.details as any;
           proposal.meta = data.fields.value.fields;
         }
       }

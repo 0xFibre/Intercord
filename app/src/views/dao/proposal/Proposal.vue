@@ -54,7 +54,7 @@
         <div v-if="state.proposal.type == 1">
           <h3 class="mb-3">Poll options</h3>
 
-          <template v-for="option in state.proposal.meta.options">
+          <template v-for="option in (state.proposal.meta as any).options">
             <v-btn block flat variant="tonal" class="my-2">
               {{ option }}
             </v-btn>

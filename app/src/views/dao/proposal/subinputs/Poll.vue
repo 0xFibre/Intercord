@@ -7,7 +7,7 @@
       variant="underlined"
       :placeholder="`Option ${i}`"
       :value="data[i]"
-      @input="(e) => $emit('updateRest', e.target.value, i)"
+      @input="(e:any) => $emit('updateRest', e.target.value, i)"
     />
   </template>
 
