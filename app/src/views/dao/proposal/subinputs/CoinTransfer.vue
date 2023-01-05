@@ -6,14 +6,27 @@
       type="number"
       variant="underlined"
       placeholder="Transfer amount"
-      @input="(e:any) => $emit('updateRest', e.target.value, 0)"
+      v-model="state.input[0]"
+      @input="onInput(0)"
     />
 
     <v-text-field
       type="text"
       variant="underlined"
       placeholder="Reciever address"
-      @input="(e:any) => $emit('updateRest', e.target.value, 1)"
+      v-model="state.input[1]"
+      @input="onInput(1)"
     />
   </div>
 </template>
+
+<script lang="ts" setup>
+import { reactive } from "vue";
+
+const emit = defineEmits(["updateRest"]);
+const state: { input: any[] } = reactive({ input: [0, ""] });
+
+function onInput(id: number) {
+  emit("updateRest", state.input[id]);
+}
+</script>

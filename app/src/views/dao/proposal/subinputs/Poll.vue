@@ -6,8 +6,9 @@
       type="text"
       variant="underlined"
       :placeholder="`Option ${i}`"
+      v-model="state.input[i]"
       :value="data[i]"
-      @input="(e:any) => $emit('updateRest', e.target.value, i)"
+      @input="onInput(i)"
     />
   </template>
 
@@ -27,5 +28,13 @@
 </template>
 
 <script lang="ts" setup>
+import { reactive } from "vue";
+
 defineProps(["data"]);
+const emit = defineEmits(["updateRest"]);
+const state: { input: any[] } = reactive({ input: [] });
+
+function onInput(id: number) {
+  emit("updateRest", state.input[id]);
+}
 </script>
